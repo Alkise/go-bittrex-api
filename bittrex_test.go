@@ -307,9 +307,9 @@ func (this *BittrexAPIFixture) TestCreateOrderError() {
 	result, err := bittrex.CreateOrder(order)
 	this.So(err, should.BeNil)
 	this.So(result, should.Resemble, &Order{
-		Quantity:     nil,
-		Limit:        nil,
-		Code:         &minTradeError,
+		Quantity: nil,
+		Limit:    nil,
+		Code:     &minTradeError,
 	})
 }
 
@@ -344,15 +344,15 @@ func (this *BittrexAPIFixture) TestCancelOrderError() {
 	result, err := bittrex.CancelOrder(orderId)
 	this.So(err, should.BeNil)
 	this.So(result, should.Resemble, &Order{
-		Quantity:     nil,
-		Limit:        nil,
-		Code:         &orderNotOpen,
+		Quantity: nil,
+		Limit:    nil,
+		Code:     &orderNotOpen,
 	})
 }
 
 ///////////////////////////////////////
 
-type fakeBittrexClient struct{
+type fakeBittrexClient struct {
 	EnableErrors bool
 }
 

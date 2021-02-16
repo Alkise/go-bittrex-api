@@ -17,19 +17,19 @@ type OrderType string
 type TimeInForce string
 
 const (
-	orderSideBuy OrderSide = "BUY"
-	orderSideSell OrderSide = "SELL"
+	OrderSideBuy  OrderSide = "BUY"
+	OrderSideSell OrderSide = "SELL"
 
-	orderTypeLimit OrderType = "LIMIT"
-	orderTypeMarket OrderType = "MARKET"
-	orderTypeCeilingLimit OrderType = "CEILING_LIMIT"
-	orderTypeCeilingMarket OrderType = "CEILING_MARKET"
-	timeInForceGTC TimeInForce = "GOOD_TIL_CANCELLED"
-	timeInForceIOC TimeInForce = "IMMEDIATE_OR_CANCEL"
-	timeInForceFOK TimeInForce = "FILL_OR_KILL"
-	timeInForcePOGTC TimeInForce = "POST_ONLY_GOOD_TIL_CANCELLED"
-	timeInForceBN TimeInForce = "BUY_NOW"
-	timeInForceI TimeInForce = "INSTANT"
+	OrderTypeLimit         OrderType   = "LIMIT"
+	OrderTypeMarket        OrderType   = "MARKET"
+	OrderTypeCeilingLimit  OrderType   = "CEILING_LIMIT"
+	OrderTypeCeilingMarket OrderType   = "CEILING_MARKET"
+	TimeInForceGTC         TimeInForce = "GOOD_TIL_CANCELLED"
+	TimeInForceIOC         TimeInForce = "IMMEDIATE_OR_CANCEL"
+	TimeInForceFOK         TimeInForce = "FILL_OR_KILL"
+	TimeInForcePOGTC       TimeInForce = "POST_ONLY_GOOD_TIL_CANCELLED"
+	TimeInForceBN          TimeInForce = "BUY_NOW"
+	TimeInForceINST        TimeInForce = "INSTANT"
 )
 
 func NewBittrexAPI(client Client, uri string) *BittrexAPI {
@@ -208,7 +208,7 @@ func (this *BittrexAPI) CreateOrder(order Order) (*Order, error) {
 }
 
 func (this *BittrexAPI) CancelOrder(orderId string) (*Order, error) {
-	uri := this.uri+"/orders/"+orderId
+	uri := this.uri + "/orders/" + orderId
 	body, err := this.client.Do("DELETE", uri, "", true)
 	if err != nil {
 		return nil, err
@@ -274,12 +274,12 @@ type MarketTicker struct {
 type Order struct {
 	OrderID       string           `json:"id,omitempty"`
 	MarketSymbol  string           `json:"marketSymbol"` //Required
-	Direction     OrderSide           `json:"direction"`    //Required - Buy, Sell
-	OrderType     OrderType           `json:"type"`         //Required - LIMIT, MARKET, CEILING_LIMIT, CEILING_MARKET
+	Direction     OrderSide        `json:"direction"`    //Required - Buy, Sell
+	OrderType     OrderType        `json:"type"`         //Required - LIMIT, MARKET, CEILING_LIMIT, CEILING_MARKET
 	Quantity      *decimal.Decimal `json:"quantity,string,omitempty"`
 	Limit         *decimal.Decimal `json:"limit,string,omitempty"`
 	Ceiling       *decimal.Decimal `json:"ceiling,string,omitempty"`
-	TimeInForce   TimeInForce           `json:"timeInForce,omitempty"` //GOOD_TIL_CANCELLED, IMMEDIATE_OR_CANCEL, FILL_OR_KILL, POST_ONLY_GOOD_TIL_CANCELLED, BUY_NOW
+	TimeInForce   TimeInForce      `json:"timeInForce,omitempty"` //GOOD_TIL_CANCELLED, IMMEDIATE_OR_CANCEL, FILL_OR_KILL, POST_ONLY_GOOD_TIL_CANCELLED, BUY_NOW
 	ClientOrderId string           `json:"clientOrderId,omitempty"`
 	FillQuantity  *decimal.Decimal `json:"fillQuantity,string,omitempty"`
 	Commission    *decimal.Decimal `json:"commission,string,omitempty"`
@@ -295,5 +295,5 @@ type Order struct {
 
 type OrderCancel struct {
 	OrderType OrderType `json:"type,omitempty"`
-	ID        string `json:"id,omitempty"`
+	ID        string    `json:"id,omitempty"`
 }

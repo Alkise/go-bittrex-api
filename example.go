@@ -25,14 +25,15 @@ func example() {
 	//orders, _ := api.getOrders("Closed")
 	//Required marketSymbol, direction, type, timeInForce
 
+	decimalValue := decimal.NewFromFloat(1)
 	order := Order{
 		OrderID:      "",
 		MarketSymbol: "ETH-BTC",
 		Direction:    "BUY",
 		OrderType:    "LIMIT",
 		TimeInForce:  "GOOD_TIL_CANCELLED",
-		Quantity:     &Dec{decimal.NewFromFloat(1)},
-		Limit:        &Dec{decimal.NewFromFloat(1)},
+		Quantity:     &decimalValue,
+		Limit:        &decimalValue,
 	}
 
 	response, err := api.CreateOrder(order)

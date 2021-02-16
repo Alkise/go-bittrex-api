@@ -12,6 +12,26 @@ type BittrexAPI struct {
 	client Client
 }
 
+type OrderSide string
+type OrderType string
+type TimeInForce string
+
+const (
+	orderSideBuy OrderSide = "BUY"
+	orderSideSell OrderSide = "SELL"
+
+	orderTypeLimit OrderType = "LIMIT"
+	orderTypeMarket OrderType = "MARKET"
+	orderTypeCeilingLimit OrderType = "CEILING_LIMIT"
+	orderTypeCeilingMarket OrderType = "CEILING_MARKET"
+	timeInForceGTC TimeInForce = "GOOD_TIL_CANCELLED"
+	timeInForceIOC TimeInForce = "IMMEDIATE_OR_CANCEL"
+	timeInForceFOK TimeInForce = "FILL_OR_KILL"
+	timeInForcePOGTC TimeInForce = "POST_ONLY_GOOD_TIL_CANCELLED"
+	timeInForceBN TimeInForce = "BUY_NOW"
+	timeInForceI TimeInForce = "INSTANT"
+)
+
 func NewBittrexAPI(client Client, uri string) *BittrexAPI {
 	return &BittrexAPI{client: client, uri: uri}
 }
@@ -187,6 +207,20 @@ func (this *BittrexAPI) CreateOrder(order Order) (*Order, error) {
 	return returnOrder, nil
 }
 
+func (this *BittrexAPI) CancelOrder(orderId string) (*Order, error) {
+	uri := this.uri+"/orders/"+orderId
+	body, err := this.client.Do("DELETE", uri, "", true)
+	if err != nil {
+		return nil, err
+	}
+	returnOrder := new(Order)
+	if err := json.Unmarshal(body, &returnOrder); err != nil {
+		return nil, errors.New(err.Error() + string(body))
+	}
+
+	return returnOrder, nil
+}
+
 //////////////////////////////////////////
 type Currency struct {
 	Symbol           string `json:"symbol"`
@@ -221,48 +255,45 @@ type Market struct {
 }
 
 type MarketSummary struct {
-	Symbol        string `json:"symbol"`
-	High          *Dec   `json:"high,string"`
-	Low           *Dec   `json:"low,string"`
-	Volume        *Dec   `json:"volume,string"`
-	QuoteVolume   *Dec   `json:"quoteVolume,string"`
-	PercentChange *Dec   `json:"percentChange,string"`
-	UpdatedAt     string `json:"updatedAt"`
+	Symbol        string           `json:"symbol"`
+	High          *decimal.Decimal `json:"high,string"`
+	Low           *decimal.Decimal `json:"low,string"`
+	Volume        *decimal.Decimal `json:"volume,string"`
+	QuoteVolume   *decimal.Decimal `json:"quoteVolume,string"`
+	PercentChange *decimal.Decimal `json:"percentChange,string"`
+	UpdatedAt     string           `json:"updatedAt"`
 }
 
 type MarketTicker struct {
-	Symbol        string `json:"symbol"`
-	LastTradeRate *Dec   `json:"lastTradeRate,string"`
-	BidRate       *Dec   `json:"bidRate,string"`
-	AskRate       *Dec   `json:"askRate,string"`
+	Symbol        string           `json:"symbol"`
+	LastTradeRate *decimal.Decimal `json:"lastTradeRate,string"`
+	BidRate       *decimal.Decimal `json:"bidRate,string"`
+	AskRate       *decimal.Decimal `json:"askRate,string"`
 }
 
 type Order struct {
-	OrderID       string       `json:"id,omitempty"`
-	MarketSymbol  string       `json:"marketSymbol"` //Required
-	Direction     string       `json:"direction"`    //Required - Buy, Sell
-	OrderType     string       `json:"type"`         //Required - LIMIT, MARKET, CEILING_LIMIT, CEILING_MARKET
-	Quantity      *Dec         `json:"quantity,string,omitempty"`
-	Limit         *Dec         `json:"limit,string,omitempty"`
-	Ceiling       *Dec         `json:"ceiling,string,omitempty"`
-	TimeInForce   string       `json:"timeInForce,omitempty"` //GOOD_TIL_CANCELLED, IMMEDIATE_OR_CANCEL, FILL_OR_KILL, POST_ONLY_GOOD_TIL_CANCELLED, BUY_NOW
-	ClientOrderId string       `json:"clientOrderId,omitempty"`
-	FillQuantity  *Dec         `json:"fillQuantity,string,omitempty"`
-	Commission    *Dec         `json:"commission,string,omitempty"`
-	Proceeds      *Dec         `json:"proceeds,string,omitempty"`
-	Status        string       `json:"status,omitempty"`
-	CreatedAt     string       `json:"createdAt,omitempty"`
-	UpdatedAt     string       `json:"updatedAt,omitempty"`
-	ClosedAt      string       `json:"closedAt,omitempty"`
-	UseAwards     bool         `json:"useAwards,omitempty"`
-	OrderToCancel *OrderCancel `json:"orderToCancel,omitempty"` //Required -  GOOD_TIL_CANCELLED, IMMEDIATE_OR_CANCEL, FILL_OR_KILL, POST_ONLY_GOOD_TIL_CANCELLED, BUY_NOW
+	OrderID       string           `json:"id,omitempty"`
+	MarketSymbol  string           `json:"marketSymbol"` //Required
+	Direction     OrderSide           `json:"direction"`    //Required - Buy, Sell
+	OrderType     OrderType           `json:"type"`         //Required - LIMIT, MARKET, CEILING_LIMIT, CEILING_MARKET
+	Quantity      *decimal.Decimal `json:"quantity,string,omitempty"`
+	Limit         *decimal.Decimal `json:"limit,string,omitempty"`
+	Ceiling       *decimal.Decimal `json:"ceiling,string,omitempty"`
+	TimeInForce   TimeInForce           `json:"timeInForce,omitempty"` //GOOD_TIL_CANCELLED, IMMEDIATE_OR_CANCEL, FILL_OR_KILL, POST_ONLY_GOOD_TIL_CANCELLED, BUY_NOW
+	ClientOrderId string           `json:"clientOrderId,omitempty"`
+	FillQuantity  *decimal.Decimal `json:"fillQuantity,string,omitempty"`
+	Commission    *decimal.Decimal `json:"commission,string,omitempty"`
+	Proceeds      *decimal.Decimal `json:"proceeds,string,omitempty"`
+	Status        string           `json:"status,omitempty"`
+	CreatedAt     string           `json:"createdAt,omitempty"`
+	UpdatedAt     string           `json:"updatedAt,omitempty"`
+	ClosedAt      string           `json:"closedAt,omitempty"`
+	UseAwards     bool             `json:"useAwards,omitempty"`
+	OrderToCancel *OrderCancel     `json:"orderToCancel,omitempty"` //Required -  GOOD_TIL_CANCELLED, IMMEDIATE_OR_CANCEL, FILL_OR_KILL, POST_ONLY_GOOD_TIL_CANCELLED, BUY_NOW
+	Code          *string          `json:"code,omitempty"`          // https://bittrex.github.io/api/v3#error-codes
 }
 
 type OrderCancel struct {
-	OrderType string `json:"type,omitempty"`
+	OrderType OrderType `json:"type,omitempty"`
 	ID        string `json:"id,omitempty"`
-}
-
-type Dec struct {
-	decimal.Decimal
 }

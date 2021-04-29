@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/shopspring/decimal"
 	"github.com/smartystreets/assertions/should"
@@ -224,6 +225,39 @@ func (this *BittrexAPIFixture) TestGetOrder() {
 		ClosedAt:     "2017-10-20T18:27:20.763Z",
 	})
 }
+
+func (this *BittrexAPIFixture) TestGetOrderExecutions() {
+	client := &fakeBittrexClient{}
+	bittrex := NewBittrexAPI(client, "")
+	result, err := bittrex.GetOrderExecutions("fab677a0-510e-456e-b450-8a75cea69f5d")
+	this.So(err, should.BeNil)
+	this.So(len(result), should.Equal, 2)
+	firstTradeTime, _ := time.Parse(time.RFC3339, "2017-10-20T18:27:20.763Z")
+	secondTradeTime, _ := time.Parse(time.RFC3339, "2017-10-20T18:27:20.793Z")
+	this.So(result, should.Resemble, []*Execution{
+		{
+			ID:           "3272882f-0c1d-4f5d-9c0f-8868e1acc0af",
+			MarketSymbol: "EHT-BTC",
+			ExecutedAt:   firstTradeTime,
+			Quantity:     decimal.NewFromFloat(77.53046131),
+			Rate:         decimal.NewFromFloat(1.03760069),
+			OrderId:      "fab677a0-510e-456e-b450-8a75cea69f5d",
+			Commission:   decimal.NewFromFloat(0.00000682),
+			IsTaker:      true,
+		},
+		{
+			ID:           "90a4f8bb-8fd9-4a13-983b-0e9b0b156497",
+			MarketSymbol: "EHT-BTC",
+			ExecutedAt:   secondTradeTime,
+			Quantity:     decimal.NewFromFloat(78.53046131),
+			Rate:         decimal.NewFromFloat(1.0376007),
+			OrderId:      "fab677a0-510e-456e-b450-8a75cea69f5d",
+			Commission:   decimal.NewFromFloat(0.00000684),
+			IsTaker:      false,
+		},
+	})
+}
+
 func (this *BittrexAPIFixture) TestGetOrders() {
 	client := &fakeBittrexClient{}
 	bittrex := NewBittrexAPI(client, "")
@@ -390,6 +424,8 @@ func (this *fakeBittrexClient) Do(method, uri, payload string, authenticate bool
 			return []byte("{\"code\": \"ORDER_NOT_OPEN\"}"), nil
 		}
 		return []byte("{\"id\": \"fab677a0-510e-456e-b450-8a75cea69f5d\",\"marketSymbol\": \"ETH-BTC\",\"direction\": \"BUY\",\"type\": \"LIMIT\",\"quantity\": \"5\",\"limit\": \"0.00039561\",\"timeInForce\": \"GOOD_TIL_CANCELLED\",\"status\": \"OPEN\",\"createdAt\": \"2020-09-08T05:08:40.84Z\",\"updatedAt\": \"2020-09-08T05:08:40.84Z\"}"), nil
+	case "/orders/fab677a0-510e-456e-b450-8a75cea69f5d/executions":
+		return []byte("[{\"id\": \"3272882f-0c1d-4f5d-9c0f-8868e1acc0af\",\"marketSymbol\": \"EHT-BTC\",\"executedAt\": \"2017-10-20T18:27:20.763Z\",\"quantity\": \"77.53046131\", \"rate\": \"1.03760069\", \"orderId\": \"fab677a0-510e-456e-b450-8a75cea69f5d\", \"commission\": \"0.00000682\",\"isTaker\": true},{\"id\": \"90a4f8bb-8fd9-4a13-983b-0e9b0b156497\",\"marketSymbol\": \"EHT-BTC\",\"executedAt\": \"2017-10-20T18:27:20.793Z\",\"quantity\": \"78.53046131\", \"rate\": \"1.0376007\", \"orderId\": \"fab677a0-510e-456e-b450-8a75cea69f5d\", \"commission\": \"0.00000684\",\"isTaker\": false}]"), nil
 	}
 
 	return nil, errors.New("test resource not found")

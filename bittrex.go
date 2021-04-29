@@ -3,6 +3,7 @@ package bittrex
 import (
 	"encoding/json"
 	"errors"
+	"time"
 
 	"github.com/shopspring/decimal"
 )
@@ -171,6 +172,21 @@ func (this *BittrexAPI) GetOrder(orderID string) (Order, error) {
 	return order, nil
 }
 
+func (this *BittrexAPI) GetOrderExecutions(orderID string) ([]*Execution, error) {
+	uri := this.uri + "/orders/" + orderID + "/executions"
+	body, err := this.client.Do("GET", uri, "", true)
+	if err != nil {
+		return nil, err
+	}
+
+	var executions []*Execution
+	if err := json.Unmarshal(body, &executions); err != nil {
+		return nil, err
+	}
+
+	return executions, nil
+}
+
 func (this *BittrexAPI) GetOrders(openOrClosed string) ([]Order, error) {
 	uri := this.uri + "/orders/" + openOrClosed
 	body, err := this.client.Do("GET", uri, "", true)
@@ -296,4 +312,15 @@ type Order struct {
 type OrderCancel struct {
 	OrderType OrderType `json:"type,omitempty"`
 	ID        string    `json:"id,omitempty"`
+}
+
+type Execution struct {
+	ID           string          `json:"id"`
+	MarketSymbol string          `json:"marketSymbol"`
+	ExecutedAt   time.Time       `json:"executedAt"`
+	Quantity     decimal.Decimal `json:"quantity"`
+	Rate         decimal.Decimal `json:"rate"`
+	OrderId      string          `json:"orderId"`
+	Commission   decimal.Decimal `json:"commission"`
+	IsTaker      bool            `json:"isTaker"`
 }

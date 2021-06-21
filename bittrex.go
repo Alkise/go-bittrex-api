@@ -159,7 +159,7 @@ func (this *BittrexAPI) GetBalances() ([]Balance, error) {
 
 func (this *BittrexAPI) GetOrder(orderID string) (Order, error) {
 	uri := this.uri + "/orders/" + orderID
-	body, err := this.client.Do("GET", uri, "", false)
+	body, err := this.client.Do("GET", uri, "", true)
 	if err != nil {
 		return Order{}, err
 	}
